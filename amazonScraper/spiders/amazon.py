@@ -7,7 +7,7 @@ class AmazonSpider(scrapy.Spider):
 
 
     def start_requests(self):
-        queries = ['laptop', 'mobile', 'keyboard']
+        queries = ['rubiks cube']
         for query in queries:
             url = 'https://amazon.com/s?'+urlencode({'k':query})
         yield scrapy.Request(url=url, callback=self.parse_keyword_response)
@@ -20,16 +20,18 @@ class AmazonSpider(scrapy.Spider):
             product_url = f"https://amazon.com/dp/{asin}"
             yield scrapy.Request(url=product_url, callback=self.parse_product_page, meta={'asin': asin})
 
-            next_page = response.xpath("//span[contains(@aria-label, 'Current Page')]//following::a/@href").extract_first()
-            if next_page:
-                print("scraping new page")
-                url = urljoin('https://www.amazon.com', next_page)
-                yield scrapy.Request(url=product_url, callback=self.parse_keyword_response)
-
-            #next_page = response.xpath("//span[contains[@class, 's-pagination-selected']]//following::a//@href").extract_first()
+            #next_page = response.xpath("//span[contains(@aria-label, 'Current Page')]//following::a/@href").extract_first()
+            #print(next_page+'this is next page')
             #if next_page:
-            #    url = urljoin('https://www.amazon.com',next_page)
+            #    print("scraping new page")
+            #    url = urljoin('https://www.amazon.com', next_page)
             #    yield scrapy.Request(url=product_url, callback=self.parse_keyword_response)
+
+            next_page = response.xpath("//span[contains(@class, 's-pagination-selected')]//following::a//@href").extract_first()
+            print(next_page+ 'this is next page')
+            if next_page:
+                url = urljoin('https://www.amazon.com',next_page)
+                yield scrapy.Request(url=product_url, callback=self.parse_keyword_response)
 
 
     def parse_product_page(self, response):
