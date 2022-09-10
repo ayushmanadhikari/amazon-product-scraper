@@ -14,6 +14,7 @@ class AmazonSpider(scrapy.Spider):
         if keyword is not None:
             url =  'https://amazon.com/s?'+urlencode({'k':query})
         
+        #replace the code above with the below code to enter the search keyword here instead of through the terminal
         #queries = ['rubiks cube','magic cube', 'speed cube']
         #for query in queries:
         #    url = 'https://amazon.com/s?'+urlencode({'k':query})
@@ -28,17 +29,17 @@ class AmazonSpider(scrapy.Spider):
         count = 0
         for product in products:
             count = count + 1
-        print(str(count)+" products found in page")
-        for product in products:
             asin = product.xpath("@data-asin").extract_first()
             product_url = f"https://amazon.com/dp/{asin}"
             yield scrapy.Request(url=product_url, callback=self.parse_product_page, meta={'asin': asin})
+        
+        #counts the number of product in each page
+        print(str(count)+" products found in page")
 
-        #next_page = response.xpath("//a[contains(@aria-label, 'next page')]/@href").extract_first()
+        #to follow all the products listing pages from 1st to last
         next_page = response.xpath("//a[contains(text(), 'Next')]/@href").extract_first()
         if next_page:
             url = urljoin('https://www.amazon.com', next_page)
-            print("next_page: "+url)
             yield scrapy.Request(url=url, callback=self.parse_keyword_response)
 
 
