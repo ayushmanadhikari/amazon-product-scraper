@@ -6,34 +6,37 @@ class AmazonSpider(scrapy.Spider):
     name = 'amazon'
 
 
+    #starting point of the scraping project.. queries block contains the list of queries/keywords to search amazon for 
+    #this method then in turn calls the parse keyword response method with scrapes the data from the product's list page
     def start_requests(self):
-        queries = ['rubiks cube']
+        queries = ['rubiks cube','magic cube', 'speed cube']
         for query in queries:
             url = 'https://amazon.com/s?'+urlencode({'k':query})
         yield scrapy.Request(url=url, callback=self.parse_keyword_response)
 
 
+    #this method scrapes the products list page and extracts data-asin, which is the product's id
+    #this data-asin is used to follow product's page and extract each product's data 
     def parse_keyword_response(self, response):
         products = response.xpath("//*[@data-asin]")
+        print(products)
         for product in products:
             asin = product.xpath("@data-asin").extract_first()
             product_url = f"https://amazon.com/dp/{asin}"
             yield scrapy.Request(url=product_url, callback=self.parse_product_page, meta={'asin': asin})
 
             #next_page = response.xpath("//span[contains(@aria-label, 'Current Page')]//following::a/@href").extract_first()
-            #print(next_page+'this is next page')
             #if next_page:
-            #    print("scraping new page")
             #    url = urljoin('https://www.amazon.com', next_page)
             #    yield scrapy.Request(url=product_url, callback=self.parse_keyword_response)
 
-            next_page = response.xpath("//span[contains(@class, 's-pagination-selected')]//following::a//@href").extract_first()
-            print(next_page+ 'this is next page')
+            next_page = response.xpath("//a[contains(@aria-label, 'next page')]/@href").extract_first()
             if next_page:
-                url = urljoin('https://www.amazon.com',next_page)
-                yield scrapy.Request(url=product_url, callback=self.parse_keyword_response)
+                url = urljoin('https://www.amazon.com', next_page)
+                yield scrapy.Request(url=product_url, callback=self.parse_product_page)
 
 
+    #this method extracts the product info from the product's specific page
     def parse_product_page(self, response):
         asin = response.meta['asin']
         title = response.xpath("//span[@id='productTitle']/text()").extract_first()
@@ -45,7 +48,7 @@ class AmazonSpider(scrapy.Spider):
         if not price:
             price = response.xpath("//div[@id='availability']/span/text()").extract_first()
 
-        yield {'asin': asin, 'price':price, 'title': title, 'rating': rating,
+        yield {'asin': asin, 'price':price, 'rating': rating,
                 'number_of_reviews': number_of_reviews, 'bullet_points': bullet_points, 
                 'seller_rank': seller_rank}
         
