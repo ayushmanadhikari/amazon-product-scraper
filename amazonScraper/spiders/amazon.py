@@ -1,3 +1,4 @@
+import keyword
 from urllib.parse import urlencode, urljoin
 import scrapy
 
@@ -5,13 +6,17 @@ import scrapy
 class AmazonSpider(scrapy.Spider):
     name = 'amazon'
 
-
     #starting point of the scraping project.. queries block contains the list of queries/keywords to search amazon for 
     #this method then in turn calls the parse keyword response method with scrapes the data from the product's list page
     def start_requests(self):
-        queries = ['rubiks cube','magic cube', 'speed cube']
-        for query in queries:
-            url = 'https://amazon.com/s?'+urlencode({'k':query})
+        query = getattr(self, 'query', None)
+        if keyword is not None:
+            url =  'https://amazon.com/s?'+urlencode({'k':query})
+        
+        #queries = ['rubiks cube','magic cube', 'speed cube']
+        #for query in queries:
+        #    url = 'https://amazon.com/s?'+urlencode({'k':query})
+
         yield scrapy.Request(url=url, callback=self.parse_keyword_response)
 
 
@@ -48,7 +53,7 @@ class AmazonSpider(scrapy.Spider):
         if not price:
             price = response.xpath("//div[@id='availability']/span/text()").extract_first()
 
-        yield {'asin': asin, 'price':price, 'rating': rating,
+        yield {'asin': asin,'title': title, 'price':price, 'rating': rating,
                 'number_of_reviews': number_of_reviews, 'bullet_points': bullet_points, 
                 'seller_rank': seller_rank}
         
