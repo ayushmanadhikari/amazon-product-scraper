@@ -20,4 +20,4 @@
 ``` scrapy crawl amazon -o filename.extension -a query="your_query" ```
 
 #### Example:
-``` scrapy crawl amazon -o gaming_laptop.csv -a query="gaming laptop"
+``` scrapy crawl amazon -o gaming_laptop.csv -a query="gaming laptop" ```
