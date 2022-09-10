@@ -5,8 +5,8 @@
 
 ###Use the following syntax to scrape for any query of your choice 
 
-``` scrapy crawl amazon -a query="your_query"  
-  example: scrapy crawl amazon -a query="gaming laptop" ```
+``` scrapy crawl amazon -a query="your_query"  ```
+``` example: scrapy crawl amazon -a query="gaming laptop" ```
 
 
 #### This will search amazon for the keyword "gaming laptop" and return you the result which contains it's product id, product name, price, rating and seller's rank.
