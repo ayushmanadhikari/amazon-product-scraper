@@ -1,3 +1,4 @@
+from itertools import count
 import keyword
 from urllib.parse import urlencode, urljoin
 import scrapy
@@ -24,21 +25,21 @@ class AmazonSpider(scrapy.Spider):
     #this data-asin is used to follow product's page and extract each product's data 
     def parse_keyword_response(self, response):
         products = response.xpath("//*[@data-asin]")
-        print(products)
+        count = 0
+        for product in products:
+            count = count + 1
+        print(str(count)+" products found in page")
         for product in products:
             asin = product.xpath("@data-asin").extract_first()
             product_url = f"https://amazon.com/dp/{asin}"
             yield scrapy.Request(url=product_url, callback=self.parse_product_page, meta={'asin': asin})
 
-            #next_page = response.xpath("//span[contains(@aria-label, 'Current Page')]//following::a/@href").extract_first()
-            #if next_page:
-            #    url = urljoin('https://www.amazon.com', next_page)
-            #    yield scrapy.Request(url=product_url, callback=self.parse_keyword_response)
-
-            next_page = response.xpath("//a[contains(@aria-label, 'next page')]/@href").extract_first()
-            if next_page:
-                url = urljoin('https://www.amazon.com', next_page)
-                yield scrapy.Request(url=product_url, callback=self.parse_product_page)
+        #next_page = response.xpath("//a[contains(@aria-label, 'next page')]/@href").extract_first()
+        next_page = response.xpath("//a[contains(text(), 'Next')]/@href").extract_first()
+        if next_page:
+            url = urljoin('https://www.amazon.com', next_page)
+            print("next_page: "+url)
+            yield scrapy.Request(url=url, callback=self.parse_keyword_response)
 
 
     #this method extracts the product info from the product's specific page
@@ -53,7 +54,7 @@ class AmazonSpider(scrapy.Spider):
         if not price:
             price = response.xpath("//div[@id='availability']/span/text()").extract_first()
 
-        yield {'asin': asin,'title': title, 'price':price, 'rating': rating,
+        yield {'asin': asin, 'price':price, 'rating': rating,
                 'number_of_reviews': number_of_reviews, 'bullet_points': bullet_points, 
                 'seller_rank': seller_rank}
         
