@@ -56,7 +56,7 @@ class AmazonSpider(scrapy.Spider):
             price = response.xpath("//div[@id='availability']/span/text()").extract_first()
         
 
-        yield {'asin': asin, 'price':price, 'rating': rating,
+        yield {'asin': asin, 'title': title, 'price':price, 'rating': rating,
                 'number_of_reviews': number_of_reviews, 'bullet_points': bullet_points, 
                 'seller_rank': seller_rank}
         
