@@ -54,7 +54,8 @@ class AmazonSpider(scrapy.Spider):
         price = response.xpath("//span[@class='a-price-whole']/text()").extract_first()
         if not price:
             price = response.xpath("//div[@id='availability']/span/text()").extract_first()
-        
+
+        ua = response.request.headers['User-Agent']
 
         yield {'asin': asin, 'title': title, 'price':price, 'rating': rating,
                 'number_of_reviews': number_of_reviews, 'bullet_points': bullet_points, 
